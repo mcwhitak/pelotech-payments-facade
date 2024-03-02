@@ -1,0 +1,43 @@
+openapi: 3.0.0
+info:
+  title: SimplePaymentsAPI
+  description: Sample server API for a fake payments API
+  version: 0.3.0
+paths:
+  /auth:
+    post:
+      description: Attempt to authorize the amount on the card passed
+      operationId: postAuth
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/AuthRequest'
+      responses:
+        '200':
+          description: Successful Auth
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SuccessModel'
+components:
+  schemas:
+    SuccessModel:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    AuthRequest:
+      required:
+        - lvt
+        - amount
+      properties:
+        lvt:
+          type: string
+          format: password
+        amount:
+          type: number
+          format: float
+
