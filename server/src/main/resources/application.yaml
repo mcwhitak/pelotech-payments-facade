@@ -1,0 +1,13 @@
+context-path: /
+endpoints:
+  routes:
+    enabled: true
+    sensitive: false
+
+datasources:
+  default:
+    db-type: postgres
+    dialect: 'POSTGRES'
+    driver-class-name: org.postgresql.Driver
+
+flyway.datasources.default.enabled: true

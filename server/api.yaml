@@ -2,13 +2,21 @@ openapi: 3.0.0
 info:
   title: SimplePaymentsAPI
   description: Sample server API for a fake payments API
-  version: 0.3.0
+  version: 0.7.0
+tags:
+  - name: auth
+    description: Authorization related operations
+  - name: settle
+    description: Settle related operations
 paths:
   /auth:
     post:
+      tags:
+        - auth
       description: Attempt to authorize the amount on the card passed
       operationId: postAuth
       requestBody:
+        required: true
         content:
           '*/*':
             schema:
@@ -20,6 +28,27 @@ paths:
             'application/json':
               schema:
                 $ref: '#/components/schemas/SuccessModel'
+  /settle:
+    post:
+      tags:
+        - settle
+      description: Settle previously authorized transaction
+      operationId: settleAuth
+      requestBody:
+        required: true
+        content:
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/SettleRequest'
+      responses:
+        '200':
+          description: Successful Settle
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/SuccessModel'
+        '404':
+          description: Authorization not found
 components:
   schemas:
     SuccessModel:
@@ -40,4 +69,10 @@ components:
         amount:
           type: number
           format: float
+    SettleRequest:
+      required:
+        - auth_id
+      properties:
+        auth_id:
+          type: string
 
