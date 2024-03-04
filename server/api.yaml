@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: SimplePaymentsAPI
   description: Sample server API for a fake payments API
-  version: 0.7.0
+  version: 0.8.1
 tags:
   - name: auth
     description: Authorization related operations

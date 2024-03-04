@@ -4,7 +4,6 @@ dependencyResolutionManagement {
   }
 }
 
-
 rootProject.name = "pelotech"
 
 include("server")

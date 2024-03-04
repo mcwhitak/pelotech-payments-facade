@@ -56,7 +56,6 @@ micronaut {
       useOptional.set(true)
       typeMapping.put("Double", "java.math.BigDecimal")
       typeMapping.put("Float", "java.math.BigDecimal")
-
     }
   }
 }
