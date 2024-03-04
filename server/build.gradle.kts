@@ -4,7 +4,7 @@ plugins {
   id("io.micronaut.application") version ("4.3.4")
   id("io.micronaut.test-resources") version ("4.3.4")
   id("dev.monosoul.jooq-docker") version ("6.0.0")
-  id("com.dorongold.task-tree") version ("2.1.1")
+  id("com.diffplug.spotless") version ("6.25.0")
 }
 
 java {
@@ -84,4 +84,11 @@ dependencies {
   runtimeOnly("org.yaml:snakeyaml")
   runtimeOnly("org.flywaydb:flyway-database-postgresql")
   runtimeOnly("org.postgresql:postgresql")
+}
+
+spotless {
+  java {
+    targetExclude("build/**/*.java")
+    palantirJavaFormat()
+  }
 }

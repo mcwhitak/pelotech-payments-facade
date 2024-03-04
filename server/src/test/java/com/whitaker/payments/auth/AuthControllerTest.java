@@ -9,30 +9,28 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthControllerTest {
 
-  @Mock
-  private AuthInsertCommand insertCommand;
+    @Mock
+    private AuthInsertCommand insertCommand;
 
-  private AuthController controller;
+    private AuthController controller;
 
-  @BeforeEach
-  public void setup() {
-    this.controller = new AuthController(insertCommand);
-  }
+    @BeforeEach
+    public void setup() {
+        this.controller = new AuthController(insertCommand);
+    }
 
-  @Test
-  public void successfulAuth() {
-    String expected = "abc123";
-    when(insertCommand.insertAuth("LVT", new BigDecimal("100.0")))
-        .thenReturn(expected);
+    @Test
+    public void successfulAuth() {
+        String expected = "abc123";
+        when(insertCommand.insertAuth("LVT", new BigDecimal("100.0"))).thenReturn(expected);
 
-
-    SuccessModel result = controller.postAuth(new AuthRequest("LVT", new BigDecimal("100.0")));
-    assertEquals(expected, result.getId());
-  }
+        SuccessModel result = controller.postAuth(new AuthRequest("LVT", new BigDecimal("100.0")));
+        assertEquals(expected, result.getId());
+    }
 }

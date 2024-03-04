@@ -30,103 +30,92 @@ import org.junit.jupiter.api.Test;
 @MicronautTest
 public class IntegrationTest {
 
-  @Inject
-  EmbeddedServer server;
+    @Inject
+    EmbeddedServer server;
 
-  @Inject
-  DSLContext dsl;
+    @Inject
+    DSLContext dsl;
 
-  @Inject
-  @Client("/")
-  HttpClient client;
+    @Inject
+    @Client("/")
+    HttpClient client;
 
-  @Test
-  public void insertAuthSuccess() {
-    HttpRequest<AuthRequest> request = HttpRequest.POST("/auth", new AuthRequest("lvt", new BigDecimal("100.0")));
+    @Test
+    public void insertAuthSuccess() {
+        HttpRequest<AuthRequest> request = HttpRequest.POST("/auth", new AuthRequest("lvt", new BigDecimal("100.0")));
 
-    SuccessModel response = client.toBlocking()
-        .retrieve(request, Argument.of(SuccessModel.class));
+        SuccessModel response = client.toBlocking().retrieve(request, Argument.of(SuccessModel.class));
 
-    //Throws NumberFormatException if not a valid int
-    int authId = Integer.parseInt(response.getId());
+        // Throws NumberFormatException if not a valid int
+        int authId = Integer.parseInt(response.getId());
 
-    //Ensure auth exists
-    AuthorizationsRecord authRecord = dsl.selectFrom(AUTHORIZATIONS)
-      .where(AUTHORIZATIONS.ID.eq(authId))
-      .fetchOne();
+        // Ensure auth exists
+        AuthorizationsRecord authRecord = dsl.selectFrom(AUTHORIZATIONS)
+                .where(AUTHORIZATIONS.ID.eq(authId))
+                .fetchOne();
 
-    assertAll(
-        () -> assertEquals(authId, authRecord.getId()),
-        () -> assertEquals("lvt", authRecord.getLvt()),
-        () -> assertEquals(new BigDecimal("100.0"), authRecord.getAmount()),
-        () -> assertTrue(LocalDateTime.now().isAfter(authRecord.getCreateTimestamp()))
-    );
-  }
+        assertAll(
+                () -> assertEquals(authId, authRecord.getId()),
+                () -> assertEquals("lvt", authRecord.getLvt()),
+                () -> assertEquals(new BigDecimal("100.0"), authRecord.getAmount()),
+                () -> assertTrue(LocalDateTime.now().isAfter(authRecord.getCreateTimestamp())));
+    }
 
-  @Test
-  public void insertAuthAndSettleSuccess() {
-    HttpRequest<AuthRequest> authRequest = HttpRequest.POST("/auth", new AuthRequest("lvt", new BigDecimal("999.99")));
+    @Test
+    public void insertAuthAndSettleSuccess() {
+        HttpRequest<AuthRequest> authRequest =
+                HttpRequest.POST("/auth", new AuthRequest("lvt", new BigDecimal("999.99")));
 
-    SuccessModel authResponse = client.toBlocking()
-        .retrieve(authRequest, Argument.of(SuccessModel.class));
+        SuccessModel authResponse = client.toBlocking().retrieve(authRequest, Argument.of(SuccessModel.class));
 
+        HttpRequest<SettleRequest> settleRequest = HttpRequest.POST("/settle", new SettleRequest(authResponse.getId()));
 
-    HttpRequest<SettleRequest> settleRequest = HttpRequest.POST("/settle", new SettleRequest(authResponse.getId()));
+        SuccessModel settleResponse = client.toBlocking().retrieve(settleRequest, Argument.of(SuccessModel.class));
 
-    SuccessModel settleResponse = client.toBlocking()
-        .retrieve(settleRequest, Argument.of(SuccessModel.class));
+        // Throws NumberFormatException if not a valid int
+        int authId = Integer.parseInt(authResponse.getId());
+        int settleId = Integer.parseInt(settleResponse.getId());
 
-    //Throws NumberFormatException if not a valid int
-    int authId = Integer.parseInt(authResponse.getId());
-    int settleId = Integer.parseInt(settleResponse.getId());
+        // Ensure auth exists
+        AuthorizationsRecord authRecord = dsl.selectFrom(AUTHORIZATIONS)
+                .where(AUTHORIZATIONS.ID.eq(authId))
+                .fetchOne();
 
+        assertAll(
+                () -> assertEquals(authId, authRecord.getId()),
+                () -> assertEquals("lvt", authRecord.getLvt()),
+                () -> assertEquals(new BigDecimal("999.99"), authRecord.getAmount()),
+                () -> assertTrue(LocalDateTime.now().isAfter(authRecord.getCreateTimestamp())));
 
-    //Ensure auth exists
-    AuthorizationsRecord authRecord = dsl.selectFrom(AUTHORIZATIONS)
-      .where(AUTHORIZATIONS.ID.eq(authId))
-      .fetchOne();
+        // Ensure settle exists
+        SettlementsRecord settleRecord =
+                dsl.selectFrom(SETTLEMENTS).where(SETTLEMENTS.ID.eq(settleId)).fetchOne();
 
-    assertAll(
-        () -> assertEquals(authId, authRecord.getId()),
-        () -> assertEquals("lvt", authRecord.getLvt()),
-        () -> assertEquals(new BigDecimal("999.99"), authRecord.getAmount()),
-        () -> assertTrue(LocalDateTime.now().isAfter(authRecord.getCreateTimestamp()))
-    );
+        assertAll(
+                () -> assertEquals(settleId, settleRecord.getId()),
+                () -> assertEquals(authId, settleRecord.getAuthId()),
+                () -> assertTrue(LocalDateTime.now().isAfter(settleRecord.getCreateTimestamp())));
+    }
 
-    //Ensure settle exists
-    SettlementsRecord settleRecord = dsl.selectFrom(SETTLEMENTS)
-        .where(SETTLEMENTS.ID.eq(settleId))
-        .fetchOne();
+    @Test
+    public void settleFailureInvalidAuthId() {
+        HttpRequest<SettleRequest> request = HttpRequest.POST("/settle", new SettleRequest("INVALID"));
 
-    assertAll(
-        () -> assertEquals(settleId, settleRecord.getId()),
-        () -> assertEquals(authId, settleRecord.getAuthId()),
-        () -> assertTrue(LocalDateTime.now().isAfter(settleRecord.getCreateTimestamp()))
-    );
-  }
+        HttpClientResponseException e = assertThrows(HttpClientResponseException.class, () -> {
+            HttpResponse<?> response = client.toBlocking().exchange(request);
+        });
 
-  @Test
-  public void settleFailureInvalidAuthId() {
-    HttpRequest<SettleRequest> request = HttpRequest.POST("/settle", new SettleRequest("INVALID"));
+        assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+    }
 
+    @Test
+    public void settleFailureAuthIdNotFound() {
+        HttpRequest<SettleRequest> request = HttpRequest.POST("/settle", new SettleRequest("99900099"));
 
-    HttpClientResponseException e = assertThrows(HttpClientResponseException.class, () -> {
-      HttpResponse<?> response = client.toBlocking()
-        .exchange(request);
-    });
+        HttpClientResponseException e = assertThrows(HttpClientResponseException.class, () -> {
+            HttpResponse<?> response = client.toBlocking().exchange(request);
+        });
 
-    assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
-  }
-
-  @Test
-  public void settleFailureAuthIdNotFound() {
-    HttpRequest<SettleRequest> request = HttpRequest.POST("/settle", new SettleRequest("99900099"));
-
-    HttpClientResponseException e = assertThrows(HttpClientResponseException.class, () -> {
-      HttpResponse<?> response = client.toBlocking()
-        .exchange(request);
-    });
-
-    assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
-  }
+        assertEquals(HttpStatus.BAD_REQUEST, e.getStatus());
+    }
 }

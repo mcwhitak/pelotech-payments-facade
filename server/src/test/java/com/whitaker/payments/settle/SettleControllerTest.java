@@ -5,36 +5,33 @@ import static org.mockito.Mockito.when;
 
 import com.whitaker.payments.generated.model.SettleRequest;
 import com.whitaker.payments.generated.model.SuccessModel;
-import java.math.BigDecimal;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 public class SettleControllerTest {
 
-  @Mock
-  private SettleInsertCommand insertCommand;
+    @Mock
+    private SettleInsertCommand insertCommand;
 
-  private SettleController controller;
+    private SettleController controller;
 
-  @BeforeEach
-  public void setup() {
-    this.controller = new SettleController(insertCommand);
-  }
+    @BeforeEach
+    public void setup() {
+        this.controller = new SettleController(insertCommand);
+    }
 
-  @Test
-  public void successfulSettle() {
-    String expected = "abc123";
+    @Test
+    public void successfulSettle() {
+        String expected = "abc123";
 
-    when(insertCommand.insertSettle("auth_id"))
-        .thenReturn(Optional.of(expected));
+        when(insertCommand.insertSettle("auth_id")).thenReturn(Optional.of(expected));
 
-
-    SuccessModel result = controller.settleAuth(new SettleRequest("auth_id"));
-    assertEquals(expected, result.getId());
-  }
+        SuccessModel result = controller.settleAuth(new SettleRequest("auth_id"));
+        assertEquals(expected, result.getId());
+    }
 }

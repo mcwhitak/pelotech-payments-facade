@@ -8,15 +8,15 @@ import io.micronaut.http.annotation.Controller;
 @Controller
 public class AuthController implements AuthApi {
 
-  private final AuthInsertCommand insertCommand;
+    private final AuthInsertCommand insertCommand;
 
-  public AuthController(AuthInsertCommand insertCommand) {
-    this.insertCommand = insertCommand;
-  }
+    public AuthController(AuthInsertCommand insertCommand) {
+        this.insertCommand = insertCommand;
+    }
 
-  public SuccessModel postAuth(AuthRequest authRequest) {
-    String id = insertCommand.insertAuth(authRequest.getLvt(), authRequest.getAmount());
+    public SuccessModel postAuth(AuthRequest authRequest) {
+        String id = insertCommand.insertAuth(authRequest.getLvt(), authRequest.getAmount());
 
-    return new SuccessModel(id);
-  }
+        return new SuccessModel(id);
+    }
 }

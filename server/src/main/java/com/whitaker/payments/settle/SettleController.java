@@ -13,21 +13,22 @@ import io.micronaut.http.annotation.Error;
 @Controller
 public class SettleController implements SettleApi {
 
-  private final SettleInsertCommand insertCommand;
+    private final SettleInsertCommand insertCommand;
 
-  public SettleController(SettleInsertCommand insertCommand) {
-    this.insertCommand = insertCommand;
-  }
+    public SettleController(SettleInsertCommand insertCommand) {
+        this.insertCommand = insertCommand;
+    }
 
-  public SuccessModel settleAuth(SettleRequest request) {
-    return insertCommand.insertSettle(request.getAuthId())
-        .map(SuccessModel::new)
-        .orElseThrow(() -> new AuthNotFoundException(request.getAuthId()));
-  }
+    public SuccessModel settleAuth(SettleRequest request) {
+        return insertCommand
+                .insertSettle(request.getAuthId())
+                .map(SuccessModel::new)
+                .orElseThrow(() -> new AuthNotFoundException(request.getAuthId()));
+    }
 
-  @Error
-  public HttpResponse<String> invalidAuthId(HttpRequest request, AuthNotFoundException e) {
-    return HttpResponse.<String>status(HttpStatus.BAD_REQUEST, "Invalid Auth Id")
-        .body("Invalid Auth Id: " + e.getInvalidId());
-  }
+    @Error
+    public HttpResponse<String> invalidAuthId(HttpRequest request, AuthNotFoundException e) {
+        return HttpResponse.<String>status(HttpStatus.BAD_REQUEST, "Invalid Auth Id")
+                .body("Invalid Auth Id: " + e.getInvalidId());
+    }
 }
