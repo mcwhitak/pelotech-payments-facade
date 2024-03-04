@@ -20,4 +20,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: test-artifacts
-          path: **/build/reports/test/**/index.html
+          path: "**/build/reports/test/**/index.html"
