@@ -1,5 +1,6 @@
 plugins {
   id("java")
+  id("pmd")
   id("io.micronaut.openapi") version("4.3.4")
   id("io.micronaut.application") version ("4.3.4")
   id("io.micronaut.test-resources") version ("4.3.4")
@@ -91,4 +92,11 @@ spotless {
     targetExclude("build/**/*.java")
     palantirJavaFormat()
   }
+}
+
+pmd {
+  ruleSetConfig = resources.text.fromFile("pmd.xml")
+  toolVersion = "7.0.0-rc4"
+  isConsoleOutput = true
+  sourceSets = listOf(project.sourceSets["main"])
 }
